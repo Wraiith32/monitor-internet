@@ -6,8 +6,11 @@ import requests
 # Define the IP address to ping and log file location
 ip_address = "8.8.8.8"
 log_file = "ping_log.txt"
-prowl_api_key = os.getenv("PROWL_API_KEY")  # Get the API key from the environment variable
-queued_message = None
+#prowl_api_key = os.getenv("PROWL_API_KEY")  # Get the API key from the environment variable
+prowl_api_key = "bd784241aeb90ac248f51a54a3f0ef52cea45b02"  # Get the API key from the environment variable
+message_queue = [] # store message when internet goes down
+
+outage_start_time = None
 
 if prowl_api_key is None:
     raise ValueError("Prowl API key is not set. Please set the PROWL_API_KEY environment variable.")
@@ -45,19 +48,26 @@ def log_result(result):
         file.write(log_entry)
 
 def queue_message(message):
-    """ Store only one message in the queue """
-    global queued_message
-    queued_message = message
+    message_queue.append(message)
     print(f"Queued message: {message}")
 
 def send_queued_message():
-    """ Send the stored message (if any) when the internet is restored """
-    global queued_message
-    if queued_message:
-        send_prowl_notification(queued_message)
-        queued_message = None  # Clear the queued message after sending
+    """ send all queued messages when the internet is restored """
+    while message_queue:
+        message = message_queue.pop(0)
+        send_prowl_notification(message)
+
+def get_outage_duration():
+    global outage_start_time
+    if outage_start_time:
+        outage_end_time = datetime.now()
+        duration = outage_end_time - outage_start_time
+        return str(duration)
+    
+    return None
 
 def main():
+    global outage_start_time
     was_connected = True  # Track the previous status
 
     while True:
@@ -68,13 +78,25 @@ def main():
         current_time = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
 
         if not result and was_connected:
+            outage_start_time = datetime.now()
+            
             # If the internet was connected previously and is now disconnected, send a notification
             queue_message("Internet connection lost! - " + current_time)
+            
             was_connected = False
+
         elif result and not was_connected:
+            
             # If the internet is back online, update the status and notify
+            outage_duration = get_outage_duration()
+
+            if outage_duration:
+                queue_message("Internet connection restored! - " + current_time + " - outage duration = " + outage_duration)
+            else:
+                queue_message("Internet connection restored! - " + current_time)
+            
             send_queued_message()
-            queue_message("Internet connection restored! - " + current_time)
+
             was_connected = True
 
         # Wait for a while before the next check (e.g., 5 minutes)
