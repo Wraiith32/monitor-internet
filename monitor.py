@@ -90,29 +90,33 @@ def main():
         current_time = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
 
         if not result and was_connected:
-            outage_start_time = datetime.now()
-            
-            # If the internet was connected previously and is now disconnected, send a notification
-            queue_message("Internet connection lost! - " + current_time)
-            
+            handle_outage()
             was_connected = False
 
         elif result and not was_connected:
-            
-            # If the internet is back online, update the status and notify
-            outage_duration = get_outage_duration()
-
-            if outage_duration:
-                queue_message("Internet connection restored! - " + current_time + " - outage duration = " + outage_duration)
-            else:
-                queue_message("Internet connection restored! - " + current_time)
-            
-            send_queued_message()
-
+            handle_recovery()
             was_connected = True
 
         # Wait for a while before the next check (e.g., 5 minutes)
         time.sleep(10)
+
+def handle_outage():
+    global outage_start_time
+    outage_start_time = datetime.now()
+    current_time = outage_start_time.strftime("%Y-%m-%d %H:%M:%S")
+    queue_message("Internet connection lost! - " + current_time)
+
+def handle_recovery():
+    current_time = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
+    outage_duration = get_outage_duration()
+    
+    if outage_duration:
+        queue_message("Internet connection restored! - " + current_time + " - outage duration = " + outage_duration)
+    else:
+        queue_message("Internet connection restored! - " + current_time)
+    
+    send_queued_message()
+    
 
 if __name__ == "__main__":
     main()
