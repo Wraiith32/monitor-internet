@@ -37,6 +37,19 @@ def ping():
     response = os.system(f"ping -n 1 {ip_address} > nul")
     return response == 0  # True if ping is successful
 
+def is_internet_down(failure_threshold=2):
+    consecutive_failures = 0
+    for _ in range(failure_threshold):
+        if not ping():
+            consecutive_failures += 1
+            print(f"consecutive failure {consecutive_failures}")
+            time.sleep(2)
+        else:
+            return False
+
+    print("threshold breached - internet down")        
+    return True
+
 def log_result(result):
     # Get the current date and time
     current_time = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
@@ -71,7 +84,7 @@ def main():
 
     while True:
         # Ping the IP address and log the result
-        result = ping()
+        result = not is_internet_down()
         log_result(result)
 
         current_time = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
