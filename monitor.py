@@ -6,8 +6,7 @@ import requests
 # Define the IP address to ping and log file location
 ip_address = "8.8.8.8"
 log_file = "ping_log.txt"
-#prowl_api_key = os.getenv("PROWL_API_KEY")  # Get the API key from the environment variable
-prowl_api_key = "bd784241aeb90ac248f51a54a3f0ef52cea45b02"  # Get the API key from the environment variable
+prowl_api_key = os.getenv("PROWL_API_KEY")  # Get the API key from the environment variable
 message_queue = [] # store message when internet goes down
 
 outage_start_time = None
