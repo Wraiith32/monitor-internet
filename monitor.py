@@ -11,10 +11,12 @@ class Logger:
         self.logger.setLevel(logging.INFO)
 
         if not self.logger.hasHandlers():
-            handler = TimedRotatingFileHandler(log_file, when="midnight", interval=1)
-            handler.suffix = "%Y-%m-%d"
             formatter = logging.Formatter('%(asctime)s - %(levelname)s - %(message)s')
-            self.logger.addHandler(handler)
+
+            file_handler = TimedRotatingFileHandler(log_file, when="midnight", interval=1)
+            file_handler.suffix = "%Y-%m-%d"
+            file_handler.setFormatter(formatter)
+            self.logger.addHandler(file_handler)
 
             console_handler = logging.StreamHandler()
             console_handler.setFormatter(formatter)
