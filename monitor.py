@@ -8,13 +8,12 @@ from logging.handlers import TimedRotatingFileHandler
 class Logger:
     def __init__(self, log_file="internet_monitor.log"):
         self.logger = logging.getLogger("InternetMonitor")
-        self.logger.setLevel(logging.INFO)
+        self.logger.setLevel(logging.CRITICAL)
 
         if not self.logger.hasHandlers():
             formatter = logging.Formatter('%(asctime)s - %(levelname)s - %(message)s')
 
             file_handler = TimedRotatingFileHandler(log_file, when="midnight", interval=1)
-            file_handler.suffix = "%Y-%m-%d"
             file_handler.setFormatter(formatter)
             self.logger.addHandler(file_handler)
 
@@ -80,7 +79,7 @@ class InternetMonitor:
             else:
                 return False
             
-        self.logger.info("Threshold breached - internet down")
+        self.logger.critical("Threshold breached - internet down")
         return True
     
     def log_result(self, result):
