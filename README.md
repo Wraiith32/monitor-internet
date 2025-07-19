@@ -44,6 +44,7 @@ The application can be configured using environment variables:
 | `PROWL_API_KEY` | `None` | Prowl API key for notifications (optional) |
 | `MONITOR_MAX_RETRIES` | `3` | Maximum number of retry attempts |
 | `MONITOR_RETRY_DELAY` | `2` | Delay between retry attempts in seconds |
+| `MONITOR_LOG_SUCCESSFUL_PINGS` | `false` | Whether to log successful pings (true/false) |
 
 ### Setting up Prowl Notifications
 
@@ -91,11 +92,26 @@ The application provides:
 
 ### Sample Output
 
+#### Verbose Mode (MONITOR_LOG_SUCCESSFUL_PINGS=true)
 ```
 2024-01-15 10:30:00,123 - InternetMonitor - INFO - Starting internet monitoring for 8.8.8.8
 2024-01-15 10:30:00,124 - InternetMonitor - INFO - Check interval: 10s, Failure threshold: 2
+2024-01-15 10:30:00,125 - InternetMonitor - INFO - Log successful pings: true
 2024-01-15 10:30:00,125 - InternetMonitor - INFO - Connected - pinging 8.8.8.8
 2024-01-15 10:30:10,126 - InternetMonitor - INFO - Connected - pinging 8.8.8.8
+2024-01-15 10:30:20,127 - InternetMonitor - INFO - Consecutive failure 1/2
+2024-01-15 10:30:22,128 - InternetMonitor - INFO - Consecutive failure 2/2
+2024-01-15 10:30:22,129 - InternetMonitor - CRITICAL - Threshold breached - internet down after 2 consecutive failures
+2024-01-15 10:30:22,130 - InternetMonitor - INFO - Disconnected - pinging 8.8.8.8
+2024-01-15 10:30:22,131 - InternetMonitor - INFO - Queued message: Internet connection lost! - 2024-01-15 10:30:22
+2024-01-15 10:30:22,132 - InternetMonitor - INFO - Notification sent successfully!
+```
+
+#### Quiet Mode (MONITOR_LOG_SUCCESSFUL_PINGS=false) - Default
+```
+2024-01-15 10:30:00,123 - InternetMonitor - INFO - Starting internet monitoring for 8.8.8.8
+2024-01-15 10:30:00,124 - InternetMonitor - INFO - Check interval: 10s, Failure threshold: 2
+2024-01-15 10:30:00,125 - InternetMonitor - INFO - Log successful pings: false
 2024-01-15 10:30:20,127 - InternetMonitor - INFO - Consecutive failure 1/2
 2024-01-15 10:30:22,128 - InternetMonitor - INFO - Consecutive failure 2/2
 2024-01-15 10:30:22,129 - InternetMonitor - CRITICAL - Threshold breached - internet down after 2 consecutive failures
@@ -134,6 +150,22 @@ Logs are written to both console and file with the following features:
 - **Multiple levels**: DEBUG, INFO, WARNING, ERROR, CRITICAL
 - **Structured format**: Timestamp, logger name, level, and message
 - **Error recovery**: Continues operation even if file logging fails
+
+### Logging Modes
+
+The monitor supports two logging modes controlled by the `MONITOR_LOG_SUCCESSFUL_PINGS` setting:
+
+#### Quiet Mode (Default)
+- **Setting**: `MONITOR_LOG_SUCCESSFUL_PINGS=false`
+- **Behavior**: Only logs failures, status changes, and notifications
+- **Use case**: Production environments where you want minimal log noise
+- **Example**: Only see logs when internet goes down or comes back up
+
+#### Verbose Mode
+- **Setting**: `MONITOR_LOG_SUCCESSFUL_PINGS=true`
+- **Behavior**: Logs every successful ping in addition to failures and status changes
+- **Use case**: Debugging or when you want to see all connectivity checks
+- **Example**: See logs for every ping attempt, successful or failed
 
 ## Development
 

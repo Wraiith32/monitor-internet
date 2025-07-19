@@ -57,6 +57,12 @@ def interactive_config():
         "2"
     ))
     
+    log_successful = get_user_input(
+        "Log successful pings (y/n)", 
+        "n"
+    ).lower()
+    config["log_successful_pings"] = log_successful in ['y', 'yes']
+    
     return Config(**config)
 
 
@@ -105,6 +111,7 @@ def main():
     print(f"  Notifications: {'Enabled' if config.prowl_api_key else 'Disabled'}")
     print(f"  Max Retries: {config.max_retries}")
     print(f"  Retry Delay: {config.retry_delay}s")
+    print(f"  Log Successful Pings: {config.log_successful_pings}")
     
     # Confirm start
     print("\n" + "=" * 40)

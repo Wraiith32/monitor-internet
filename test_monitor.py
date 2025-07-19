@@ -23,10 +23,12 @@ def test_config():
     # Test environment variable loading
     os.environ["MONITOR_IP_ADDRESS"] = "1.1.1.1"
     os.environ["MONITOR_CHECK_INTERVAL"] = "30"
+    os.environ["MONITOR_LOG_SUCCESSFUL_PINGS"] = "true"
     
     config = Config.from_env()
     assert config.ip_address == "1.1.1.1"
     assert config.check_interval == 30
+    assert config.log_successful_pings == True
     
     print("✓ Configuration tests passed")
 
@@ -86,6 +88,15 @@ def test_internet_monitor():
     assert "total_failures" in stats
     assert "success_rate" in stats
     assert "current_status" in stats
+    
+    # Test logging configuration
+    # Test with log_successful_pings=False (default)
+    monitor.config.log_successful_pings = False
+    monitor.log_result(True)  # Should not log successful ping
+    
+    # Test with log_successful_pings=True
+    monitor.config.log_successful_pings = True
+    monitor.log_result(True)  # Should log successful ping
     
     print("✓ Internet monitor tests passed")
 

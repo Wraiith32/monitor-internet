@@ -21,6 +21,7 @@ class Config:
     prowl_api_key: Optional[str] = None
     max_retries: int = 3
     retry_delay: int = 2
+    log_successful_pings: bool = False
 
     @classmethod
     def from_env(cls) -> 'Config':
@@ -32,7 +33,8 @@ class Config:
             log_file=os.getenv("MONITOR_LOG_FILE", "internet_monitor.log"),
             prowl_api_key=os.getenv("PROWL_API_KEY"),
             max_retries=int(os.getenv("MONITOR_MAX_RETRIES", "3")),
-            retry_delay=int(os.getenv("MONITOR_RETRY_DELAY", "2"))
+            retry_delay=int(os.getenv("MONITOR_RETRY_DELAY", "2")),
+            log_successful_pings=os.getenv("MONITOR_LOG_SUCCESSFUL_PINGS", "false").lower() == "true"
         )
 
 
@@ -216,6 +218,10 @@ class InternetMonitor:
 
     def log_result(self, result: bool) -> None:
         """Log the current connection status."""
+        if result and not self.config.log_successful_pings:
+            # Don't log successful pings unless configured to do so
+            return
+            
         status = "Connected" if result else "Disconnected"
         self.logger.info(f"{status} - pinging {self.config.ip_address}")
 
@@ -273,6 +279,7 @@ class InternetMonitor:
         """Main monitoring loop."""
         self.logger.info(f"Starting internet monitoring for {self.config.ip_address}")
         self.logger.info(f"Check interval: {self.config.check_interval}s, Failure threshold: {self.config.failure_threshold}")
+        self.logger.info(f"Log successful pings: {self.config.log_successful_pings}")
         
         try:
             while True:
