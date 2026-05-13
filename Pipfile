@@ -4,7 +4,7 @@ verify_ssl = true
 name = "pypi"
 
 [packages]
-certifi = "==2025.10.5"
+certifi = "==2026.4.22"
 charset-normalizer = "==3.4.4"
 idna = "==3.11"
 requests = "==2.33.0"
